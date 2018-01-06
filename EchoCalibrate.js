@@ -9,7 +9,7 @@ board.on("ready", function() {
 
   proximity.on("data", function() {
     console.log('\033c');
-	console.log("Proximity: ");
+	  console.log("Proximity: ");
     console.log("  cm  : ", this.cm);
     console.log("  in  : ", this.in);
     console.log("-----------------");
