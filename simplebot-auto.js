@@ -1,15 +1,32 @@
+// Simplebot-auto.js
+//
+// this program demonstrates obstacle detection and avoidance
+// Using code from Nodebots Australia
+// https://github.com/nodebotsau/simplebot/blob/master/examples/backoff.js
+// 
+
 'use strict';
 
-var VirtualSerialPort = require('udp-serial').SerialPort;
-var firmata = require('firmata');
-var five = require("johnny-five");
+
+const SENSOR_PIN = 2
+const LEFT_PIN = 11
+const RIGHT_PIN = 10
+const LEFT_DEADBAND = [88, 88]
+const RIGHT_DEADBAND = [92, 92]
+const MIN_DISTANCE = 20
+const SAFE_DISTANCE = 30
+const WAIT = 1000
+const INTERVAL = 1000
+
+const VirtualSerialPort = require('udp-serial').SerialPort;
+const firmata = require('firmata');
+const five = require("johnny-five");
 
 //create the udp serialport and specify the host and port to connect to
-var sp = new VirtualSerialPort({
-
-// Bot1 - 192.168.1.54
+const sp = new VirtualSerialPort({
+// Bot1 - 192.168.1.54 when in Station, 192.168.4.1 in AP mode
 //  host: '192.168.1.54',
-  host: '192.168.1.54',
+  host: '192.168.4.1',
   type: 'udp4',
   port: 1025
 });
@@ -20,69 +37,64 @@ io.once('ready', function(){
     console.log('IO Ready');
     io.isReady = true;
 
-var board = new five.Board({io: io, repl: true});
-//    var board = new five.Board({
-//         port: "COM8"
-//		});
+const board = new five.Board({io: io, repl: true});
+
 
 board.on('ready', function(){
-  var proximity = new five.Proximity({
+  const left_wheel = new five.Servo({pin: LEFT_PIN, type: 'continuous', invert: true});
+  const right_wheel = new five.Servo({pin: RIGHT_PIN, type: 'continuous', invert: false});
+  const proximity = new five.Proximity({
     controller: "HCSR04",
-    pin: 2
+    pin: SENSOR_PIN
   });
-  console.log('five ready');
-  //Full Johnny-Five support here:
-  console.log("Control the bot with the w, a, s, and d keys, the space bar to stop, q to exit.");
 
-  var left_wheel = new five.Servo.Continuous(9);
-  var right_wheel = new five.Servo.Continuous(8);
 
-function forward() {
-  left_wheel.cw();
-  right_wheel.ccw();
-}
+  let backoff = 0
+  let backingOff = false
+  let waiting = 0
+  let safe = true
 
-function reverse() {
-  left_wheel.ccw();
-  right_wheel.cw();
-}
+  setInterval(() => {
+    if (safe) {
+      console.log("It's safe, moving forward");
+      left_wheel.ccw(.5);
+      right_wheel.ccw(.5);
+    } else if (backingOff) {
+      console.log("Something blocking, turning right");
+      left_wheel.ccw(.5);
+      right_wheel.cw(.5);
+    }
+  }, INTERVAL)
 
-function left() {
-  left_wheel.stop();
-  right_wheel.ccw();
-}
+//    if (backingOff) {
+//      left_wheel.cw()
+//      right_wheel.cw()
+//      backoff = backoff + INTERVAL
+//      waiting = 0
+//      backingOff = false
+//    } else if (waiting < WAIT && safe) {
+//      waiting = waiting + INTERVAL
+//      left_wheel.stop()
+//      right_wheel.stop()
+//    } else if (backoff > 0 && safe) {
+//      left_wheel.ccw()
+//      right_wheel.ccw()
+//      backoff = backoff - INTERVAL
+//    } else {
+//      left_wheel.stop()
+//      right_wheel.stop()
+//    }
+//    // console.log(backoff, waiting, backingOff, safe)
+//  }, INTERVAL)
 
-function right() {
-  left_wheel.cw();
-  right_wheel.stop();
-}
-
-function stop() {
-  left_wheel.stop();
-  right_wheel.stop();
-}
 
 // wander unless object is close
-  proximity.on("data", function() {
-      //console.log("\033[2J");
-      //console.log("Proximity: ");
-      //console.log("  cm  : ", this.cm);
-      //console.log("  in  : ", this.in);
-      //console.log("-----------------");
-    if (this.cm > 15) {
-      console.log("  cm  : ", this.cm);
-      console.log("All Clear - Moving...")
-      forward();
-    } else {
-      console.log("  cm  : ", this.cm);
-      console.log("WHOAH!!!  Found an obstruction! Stopping!")
-      stop();
-      setTimeout(reverse, 3000);
-      setTimeout(left, 3000);
-      setTimeout(forward, 1000);
-
-      //process.exit();
-    }
+  proximity.on("change", function() {
+    //backingOff = (this.cm < MIN_DISTANCE)
+    backingOff = (this.cm < MIN_DISTANCE)
+    console.log('backingOff: ' + backingOff);
+    safe = (this.cm > SAFE_DISTANCE)
+    console.log('safe: ' + safe);
   });
 
 
@@ -98,8 +110,7 @@ function stop() {
           }
 
           if (key.name == "q") {
-            // clear the screen before we write something new.
-            //console.log("\033[2J");
+
             console.log("Quitting");
             left_wheel.stop();
             right_wheel.stop();
@@ -108,4 +119,7 @@ function stop() {
           }
         });
     });
-});
+    this.repl.inject({
+      left_wheel: left_wheel, right_wheel: right_wheel, proximity: proximity
+    });
+})
