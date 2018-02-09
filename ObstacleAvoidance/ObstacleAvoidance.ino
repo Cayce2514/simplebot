@@ -1,12 +1,16 @@
 #include <Servo.h>
 // this code doesn't work. -cayceb 1/9/18
-const int frontEchoPin = 3;
-const int frontTriggerPin = 2;
-const int leftEchoPin = 11;
+const int frontEchoPin = 9;
+const int frontTriggerPin = 8;
+// const int leftEchoPin = 11;
 
 
 const int left_wheel = 11;
+const int left_wheel_back = 11;
+
 const int right_wheel = 10;
+const int left_wheel_back = 11;
+
 volatile float maxFrontDistance = 25.00;
 volatile float frontDuration, frontDistanceCm;
 volatile float maxLeftDistance, maxRightDistance = 20.00;
