@@ -11,8 +11,8 @@ const int leftServoPin = 9;        // continuous rotation servo
 const int rightServoPin = 8;      // continuous rotation servo
 
 // how fast do you want your motors to go? 0-89 forward, 90 stop, 91-180 reverse.
-int forward = 0;
-int back = 180;
+int forward = 180;
+int back = 0;
 int stop = 90;
 
 volatile float maxFrontDistance = 10.00;
@@ -38,13 +38,13 @@ void loop() {
   // front distance check
   checkFrontDistance();
   if (frontDistanceCm < maxFrontDistance) {
-    Serial.println("Too close");
+    Serial.println("Attack!!");
     moveForward();
     //delay(1000);
     //moveBackward();
     //delay(1000);
     //moveLeft();
-    delay(1000);
+    delay(50);
  
   }
   else {
@@ -75,8 +75,8 @@ void moveBackward() {
 
 void moveForward() {
   Serial.println("Forward.");
-  leftServo.write(back);
-  rightServo.write(forward);
+  leftServo.write(forward);
+  rightServo.write(back);
 }
 
 void moveLeft() {
