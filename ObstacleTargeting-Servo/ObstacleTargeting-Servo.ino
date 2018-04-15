@@ -30,6 +30,10 @@ void setup() {
   leftServo.attach(leftServoPin);
   rightServo.attach(rightServoPin);
 
+  // ensure the servos are stopped
+  leftServo.write(stop);
+  rightServo.write(stop);
+
   
   delay(5000);
 }
@@ -44,7 +48,7 @@ void loop() {
     //moveBackward();
     //delay(1000);
     //moveLeft();
-    delay(50);
+    delay(1000);
  
   }
   else {
