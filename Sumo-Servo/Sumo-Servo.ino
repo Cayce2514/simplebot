@@ -21,8 +21,8 @@ const int leftServoPin = 9;        // continuous rotation servo
 const int rightServoPin = 8;      // continuous rotation servo
 
 // how fast do you want your motors to go? 0-89 forward, 90 stop, 91-180 reverse.
-int forward = 100;
-int back = 10;
+int forward = 95;
+int back = 85;
 int stop = 90;
 
 // Reflectivity sensor connection and settings
