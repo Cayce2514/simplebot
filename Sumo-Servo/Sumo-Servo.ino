@@ -88,6 +88,7 @@ void setup() {
   
   delay(5000);
 }
+
 void loop() {
   // Let everyone know that we're running the loop
   digitalWrite(LEDpin, HIGH);
@@ -156,7 +157,9 @@ void loop() {
   } // end outer if
   else { 
     Serial.println("Line detected! Back Up!");
-    moveStop();
+    moveBackward();
+    delay(500);
+    moveRight();
   }
   //  ----------------- End Sumo  --------------------
 } // end void loop
