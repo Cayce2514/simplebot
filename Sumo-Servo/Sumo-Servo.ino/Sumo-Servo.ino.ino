@@ -22,6 +22,10 @@ const int rightServoPin = 8;      // continuous rotation servo
 
 // how fast do you want your motors to go? 0-89 forward, 90 stop, 91-180 reverse.
 int forward = 95;
+int attackSpeedRight = 0;
+int retreatSpeedRight = 180;
+int attackSpeedLeft = 180;
+int retreatSpeedLeft = 0;
 int back = 85;
 int stop = 90;
 
@@ -146,20 +150,16 @@ void loop() {
     } // goes with the if above
     else {
         Serial.println("Searching...");
-        moveForward();
-        delay(250);
-        //moveRight();
-        //delay(250);
-        //moveForward();
-        //delay(500);
+        moveLeft();
+        delay(500);
 
     } // goes with the else above
   } // end outer if
   else { 
     Serial.println("Line detected! Back Up!");
     moveBackward();
-    delay(500);
-    moveRight();
+    //delay(500);
+    //moveRight();
   }
   //  ----------------- End Sumo  --------------------
 } // end void loop
@@ -170,8 +170,8 @@ void checkFrontDistance() {
   digitalWrite(frontTriggerPin, HIGH);  
   delayMicroseconds(10);
   digitalWrite(frontTriggerPin, LOW);
-  frontDuration = pulseIn(frontEchoPin, HIGH);  //medimos el tiempo entre pulsos, en microsegundos
-  frontDistanceCm = frontDuration * 10 / 292 / 2;  //convertimos a distancia, en cm
+  frontDuration = pulseIn(frontEchoPin, HIGH);  // We measure the time between pulses, in microseconds
+  frontDistanceCm = frontDuration * 10 / 292 / 2;  // Convert the distance to cm.
   Serial.print("                     Distance: ");
   Serial.print(frontDistanceCm);
   Serial.println(" cm");
@@ -179,9 +179,10 @@ void checkFrontDistance() {
 
 // basic movement
 void moveBackward() {
-  Serial.println("Backward.");
-  leftServo.write(back);
-  rightServo.write(forward);
+  Serial.println("Backward retreat!");
+  leftServo.write(retreatSpeedLeft);
+  rightServo.write(retreatSpeedRight);
+  delay(500);
 }
 
 void moveForward() {
@@ -192,7 +193,7 @@ void moveForward() {
 
 void moveLeft() {
   Serial.println("Left.");
-  leftServo.write(stop);
+  leftServo.write(back);
   rightServo.write(forward);
 }
 
@@ -211,7 +212,7 @@ void moveStop() {
 // Attack!!
 void attack() {
   Serial.println("Attack!!!");
-  leftServo.write(forward);
-  rightServo.write(back);
+  leftServo.write(attackSpeedLeft);
+  rightServo.write(attackSpeedRight);
 }
 
