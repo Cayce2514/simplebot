@@ -1,33 +1,29 @@
-#include <Servo.h>
 #include <QTRSensors.h>
 
 // Behavior indicator LED
 // This tells us when to calibrate, when the robot is ready to run and that it's running it's program
-const int LEDpin = 13;
+const int LEDpin = 7; 
 
 // Distance sensor connections
-const int frontEchoPin = 11;
-const int frontTriggerPin = 10;
+const int frontEchoPin = 9;
+const int frontTriggerPin = 8;
 
 // Distance sensor settings
 volatile float maxFrontDistance = 5.00;
 volatile float frontDuration, frontDistanceCm;
 
-// Servo instantiation, connections and settings
-Servo leftServo;
-Servo rightServo;
+// digital write will receive the full 5v signal.  This may be too fast.
+// use analog write to send a PWM signal with a value of 0 - 255.
+const int left_wheel = 3;        // Green wire, IN1, pin 3
+const int left_wheel_back = 6;   // Yellow wire, IN2, pin 6
+const int right_wheel = 11;      // Blue wire, IN3, pin 11
+const int right_wheel_back = 5;  // Purple wire, IN4, pin 5
 
-const int leftServoPin = 9;        // continuous rotation servo
-const int rightServoPin = 8;      // continuous rotation servo
-
-// how fast do you want your motors to go? 0-89 forward, 90 stop, 91-180 reverse.
-int forward = 95;
-int back = 85;
-int attackSpeedRight = 0;
-int retreatSpeedRight = 180;
-int attackSpeedLeft = 180;
-int retreatSpeedLeft = 0;
-int stop = 90;
+// how fast do you want your motors to go? 0-255.
+int forwardSpeed = 95;
+int backSpeed = 85;
+int attackSpeed = 195;
+int stop = 0;
 
 // Reflectivity sensor connection and settings
 // sensors 0 through 5 are connected to analog inputs 0 through 5, respectively
@@ -92,13 +88,11 @@ void setup() {
   pinMode(frontTriggerPin, OUTPUT);
   pinMode(frontEchoPin, INPUT);
 
-  // Servo configuration
-  leftServo.attach(leftServoPin);
-  rightServo.attach(rightServoPin);
-
-  // ensure the servos are stopped
-  leftServo.write(stop);
-  rightServo.write(stop);
+  // motors
+  pinMode(left_wheel, OUTPUT);
+  pinMode(left_wheel_back, OUTPUT);
+  pinMode(right_wheel, OUTPUT);
+  pinMode(right_wheel_back, OUTPUT);
   
   delay(5000);
 }
@@ -188,40 +182,50 @@ void checkFrontDistance() {
 // basic movement
 
 void moveBackward() {
-  Serial.println("Backward retreat!");
-  leftServo.write(retreatSpeedLeft);
-  rightServo.write(retreatSpeedRight);
-  delay(500);
+  Serial.println("Backward.");
+  analogWrite(left_wheel_back, backSpeed);  // alogWrite values from 0 to 255
+  analogWrite(right_wheel_back, backSpeed);
+  analogWrite(left_wheel, stop);
+  analogWrite(right_wheel, stop);
 }
 
 void moveForward() {
   Serial.println("Forward.");
-  leftServo.write(forward);
-  rightServo.write(back);
+  analogWrite(left_wheel, forwardSpeed);
+  analogWrite(right_wheel, forwardSpeed);
+  analogWrite(left_wheel_back, stop);
+  analogWrite(right_wheel_back, stop);
 }
 
 void moveLeft() {
   Serial.println("Left.");
-  leftServo.write(stop);
-  rightServo.write(back);
+  analogWrite(left_wheel, stop);
+  analogWrite(right_wheel, forwardSpeed);
+  analogWrite(left_wheel_back, stop);
+  analogWrite(right_wheel_back, stop);
 }
 
 void moveRight() {
   Serial.println("Right.");
-  leftServo.write(forward);
-  rightServo.write(stop);
+  analogWrite(left_wheel, forwardSpeed);
+  analogWrite(right_wheel, stop);
+  analogWrite(left_wheel_back, stop);
+  analogWrite(right_wheel_back, stop);
 }
 
 void moveStop() {
   Serial.println("Stopping.");
-  leftServo.write(stop);
-  rightServo.write(stop);
+  analogWrite(left_wheel_back, stop);
+  analogWrite(right_wheel_back, stop);
+  analogWrite(left_wheel, stop);
+  analogWrite(right_wheel, stop);
 }
 
 // Attack!!
 void attack() {
   Serial.println("Attack!!!");
-  leftServo.write(attackSpeedLeft);
-  rightServo.write(attackSpeedRight);
+  analogWrite(left_wheel, attackSpeed);
+  analogWrite(right_wheel, attackSpeed);
+  analogWrite(left_wheel_back, stop);
+  analogWrite(right_wheel_back, stop);
 }
-
